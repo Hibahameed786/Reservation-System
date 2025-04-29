@@ -43,6 +43,7 @@ app.get('/reservations', (req, res) => {
     res.json(reservations);
 });
 
+
 // Get available slots (from HEAD)
 app.get('/available', (req, res) => {
     const reservations = fs.existsSync('data.json')
@@ -118,6 +119,7 @@ app.post('/reserve', (req, res) => {
 
 // Start server (from Commit bfcc84f)
 const PORT = process.env.PORT || 8080;
+
 app.listen(PORT, () => {
     console.log(`🚀 Server running at http://localhost:${PORT}`);
 });
