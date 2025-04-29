@@ -1,35 +1,17 @@
 const express = require('express');
-const bodyParser = require('body-parser');
-const cors = require('cors');
-const fs = require('fs');
 const path = require('path');
-
+const fs = require('fs');
 const app = express();
 
-// Serve static HTML from "public" folder
+// Serve static files from the "public" folder
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Middleware
-app.use(cors());
-app.use(bodyParser.json());
-
-// Handle reservation POST
-app.post('/reserve', (req, res) => {
-    const reservation = req.body;
-
-    let data = [];
-    if (fs.existsSync('data.json')) {
-        const file = fs.readFileSync('data.json');
-        data = JSON.parse(file);
-    }
-
-    data.push(reservation);
-    fs.writeFileSync('data.json', JSON.stringify(data, null, 2));
-
-    res.json({ message: 'Reservation saved successfully!' });
+// Homepage route - serves index.html
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// Get all reservations
+// GET /reservations - returns reservation data from data.json
 app.get('/reservations', (req, res) => {
     if (fs.existsSync('data.json')) {
         const file = fs.readFileSync('data.json');
@@ -40,7 +22,7 @@ app.get('/reservations', (req, res) => {
     }
 });
 
-// Correct port for Render
+// Use the dynamic port from Render or fallback to 8080 locally
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
     console.log(`🚀 Server is running at http://localhost:${PORT}`);
