@@ -1,17 +1,22 @@
 const express = require('express');
 const path = require('path');
 const fs = require('fs');
-const bodyParser = require('body-parser');
-const nodemailer = require('nodemailer');
+const bodyParser = require('body-parser'); // From HEAD
+const nodemailer = require('nodemailer'); // From HEAD
 
 const app = express();
-app.use(express.static(path.join(__dirname, 'public')));
-app.use(bodyParser.json());
 
+// Serve static files from the "public" folder
+app.use(express.static(path.join(__dirname, 'public')));
+
+// Middleware
+app.use(bodyParser.json()); // From HEAD
+
+// Constants
 const MAX_RESERVATIONS = 60;
 const allowedTimes = ['18:00', '20:00']; // 6PM and 8PM
 
-// Email configuration
+// Email configuration (from HEAD)
 const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
@@ -20,12 +25,12 @@ const transporter = nodemailer.createTransport({
     }
 });
 
-// Serve homepage
+// Homepage route (from Commit bfcc84f)
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// Get current reservations
+// Get current reservations (from HEAD)
 app.get('/reservations', (req, res) => {
     const reservations = fs.existsSync('data.json')
         ? JSON.parse(fs.readFileSync('data.json'))
@@ -33,7 +38,7 @@ app.get('/reservations', (req, res) => {
     res.json(reservations);
 });
 
-// Get available slots
+// Get available slots (from HEAD)
 app.get('/available', (req, res) => {
     const reservations = fs.existsSync('data.json')
         ? JSON.parse(fs.readFileSync('data.json'))
@@ -62,7 +67,7 @@ app.get('/available', (req, res) => {
     res.json({ availableSlots: upcomingSlots, remaining });
 });
 
-// Make a reservation
+// Make a reservation (from HEAD)
 app.post('/reserve', (req, res) => {
     const { name, email, date, time } = req.body;
 
@@ -86,7 +91,7 @@ app.post('/reserve', (req, res) => {
     reservations.push({ name, email, date, time });
     fs.writeFileSync('data.json', JSON.stringify(reservations, null, 2));
 
-    // Send confirmation email
+    // Send confirmation email (from HEAD)
     const formattedTime = time === '18:00' ? '6:00 PM - 7:00 PM' : '8:00 PM - 9:00 PM';
     const mailOptions = {
         from: '25991@yenepoya.edu.in',
@@ -106,7 +111,7 @@ app.post('/reserve', (req, res) => {
     });
 });
 
-// Start server
+// Start server (from Commit bfcc84f)
 const PORT = process.env.PORT || 8080;
 app.listen(PORT, () => {
     console.log(`🚀 Server running at http://localhost:${PORT}`);
