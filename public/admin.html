@@ -1,8 +1,8 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Admin - View Reservations</title>
     <meta charset="UTF-8">
+    <title>Admin - View Reservations</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -52,7 +52,7 @@
     </table>
 
     <script>
-        fetch('http://localhost:3000/reservations')
+        fetch('/reservations')
             .then(res => res.json())
             .then(data => {
                 const table = document.getElementById('reservationTable').querySelector('tbody');
@@ -62,7 +62,7 @@
                         <td>${r.name}</td>
                         <td>${r.email}</td>
                         <td>${r.date}</td>
-                        <td>${r.time}</td>
+                        <td>${r.time === '18:00' ? '6:00 PM' : '8:00 PM'}</td>
                     `;
                     table.appendChild(row);
                 });
