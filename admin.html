@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin - View Reservations</title>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 40px auto;
+            padding: 20px;
+            background-color: #f0f0ff;
+            border-radius: 12px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #444;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th, td {
+            padding: 12px;
+            border: 1px solid #ccc;
+            text-align: left;
+        }
+
+        th {
+            background-color: #ddd;
+        }
+    </style>
+</head>
+<body>
+    <h1>All Reservations</h1>
+    <table id="reservationTable">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Date</th>
+                <th>Time</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Data will go here -->
+        </tbody>
+    </table>
+
+    <script>
+        fetch('http://localhost:3000/reservations')
+            .then(res => res.json())
+            .then(data => {
+                const table = document.getElementById('reservationTable').querySelector('tbody');
+                data.forEach(r => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${r.name}</td>
+                        <td>${r.email}</td>
+                        <td>${r.date}</td>
+                        <td>${r.time}</td>
+                    `;
+                    table.appendChild(row);
+                });
+            })
+            .catch(err => {
+                console.error('Error fetching reservations:', err);
+            });
+    </script>
+</body>
+</html>
