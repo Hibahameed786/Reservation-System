@@ -1,18 +1,15 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Reservation System</title>
+    <meta charset="UTF-8">
     <style>
         body {
             font-family: Arial, sans-serif;
-            max-width: 500px;
-            margin: 40px auto;
-            padding: 20px;
-            background-color: #f9f9f9;
-            border-radius: 12px;
-            box-shadow: 0 0 15px rgba(0,0,0,0.1);
+            background-color: #f3f3f3;
+            padding: 40px;
+            max-width: 600px;
+            margin: auto;
         }
 
         h1 {
@@ -20,91 +17,123 @@
             color: #333;
         }
 
-        label {
-            display: block;
-            margin-top: 10px;
-            font-weight: bold;
-        }
-
-        input, button {
-            width: 100%;
-            padding: 10px;
-            margin-top: 5px;
-            border-radius: 6px;
-            border: 1px solid #ccc;
-            font-size: 16px;
-        }
-
-        button {
+        .slot-button {
             background-color: #4CAF50;
             color: white;
+            padding: 15px;
             border: none;
-            margin-top: 20px;
+            border-radius: 8px;
+            margin: 10px 5px;
             cursor: pointer;
         }
 
-        button:hover {
+        .slot-button:hover {
             background-color: #45a049;
         }
 
         #confirmation {
             margin-top: 20px;
+            text-align: center;
             font-weight: bold;
             color: #2e7d32;
+        }
+
+        #available {
             text-align: center;
+            margin-bottom: 20px;
+            font-size: 14px;
+            color: #555;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            margin-top: 8px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+        }
+
+        button:disabled {
+            background-color: #999;
+            cursor: not-allowed;
         }
     </style>
 </head>
 <body>
-    <h1>Book Your Spot</h1>
+    <h1>Book Your Appointment</h1>
+    <div id="available">Loading available slots...</div>
 
-    <form id="reservationForm">
-        <label>Name:</label>
-        <input type="text" id="name" required>
-
-        <label>Email:</label>
-        <input type="email" id="email" required>
-
-        <label>Date:</label>
-        <input type="date" id="date" required>
-
-        <label>Time:</label>
-        <input type="time" id="time" required>
-
-        <button type="submit">Book Now</button>
+    <form id="form" style="display:none;">
+        <input type="text" id="name" placeholder="Your Name" required>
+        <input type="email" id="email" placeholder="Your Email" required>
+        <input type="hidden" id="selectedDate">
+        <input type="hidden" id="selectedTime">
+        <div id="slots"></div>
+        <button type="submit" id="submitBtn">Confirm Booking</button>
     </form>
 
-    <p id="confirmation"></p>
+    <div id="confirmation"></div>
 
     <script>
-        const form = document.getElementById('reservationForm');
+        const availableDiv = document.getElementById('available');
+        const form = document.getElementById('form');
+        const slotsDiv = document.getElementById('slots');
+        const selectedDate = document.getElementById('selectedDate');
+        const selectedTime = document.getElementById('selectedTime');
         const confirmation = document.getElementById('confirmation');
+
+        fetch('/available')
+            .then(res => res.json())
+            .then(data => {
+                availableDiv.innerText = `🗓️ ${data.remaining} total slots left this month.`;
+                slotsDiv.innerHTML = '';
+                data.availableSlots.forEach(slot => {
+                    const btn = document.createElement('button');
+                    btn.className = 'slot-button';
+                    const formattedTime = slot.time === '18:00' ? '6:00 PM - 7:00 PM' : '8:00 PM - 9:00 PM';
+                    btn.innerText = `${slot.date} — ${formattedTime}`;
+                    btn.onclick = () => {
+                        selectedDate.value = slot.date;
+                        selectedTime.value = slot.time;
+                        document.querySelectorAll('.slot-button').forEach(b => b.disabled = false);
+                        btn.disabled = true;
+                    };
+                    slotsDiv.appendChild(btn);
+                });
+                form.style.display = 'block';
+            })
+            .catch(() => {
+                availableDiv.innerText = '⚠️ Could not load available slots.';
+            });
 
         form.addEventListener('submit', function(e) {
             e.preventDefault();
-
             const reservation = {
                 name: document.getElementById('name').value,
                 email: document.getElementById('email').value,
-                date: document.getElementById('date').value,
-                time: document.getElementById('time').value
+                date: selectedDate.value,
+                time: selectedTime.value
             };
 
-            fetch('http://localhost:3000/reserve', {
+            fetch('/reserve', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(reservation)
             })
             .then(response => response.json())
             .then(data => {
-                confirmation.innerText = `✅ ${data.message} Thank you, ${reservation.name}! Your reservation is for ${reservation.date} at ${reservation.time}.`;
+                confirmation.innerText = data.message.includes('successful') || data.message.includes('saved')
+                    ? `✅ ${data.message}`
+                    : `❌ ${data.message}`;
                 form.reset();
+                return fetch('/available');
             })
-            .catch(error => {
-                console.error('Error:', error);
-                confirmation.innerText = '❌ Something went wrong. Please try again.';
+            .then(res => res.json())
+            .then(data => {
+                availableDiv.innerText = `🗓️ ${data.remaining} total slots left this month.`;
+            })
+            .catch(() => {
+                confirmation.innerText = '❌ An error occurred. Please try again.';
             });
         });
     </script>
