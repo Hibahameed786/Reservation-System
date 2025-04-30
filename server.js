@@ -1,4 +1,3 @@
-
 const express = require('express');
 const path = require('path');
 const fs = require('fs');
@@ -9,7 +8,6 @@ const app = express();
 
 // Serve static files from the "public" folder
 app.use(express.static(path.join(__dirname, 'public')));
-
 
 // Middleware
 app.use(bodyParser.json()); // From HEAD
@@ -27,22 +25,17 @@ const transporter = nodemailer.createTransport({
     }
 });
 
-
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-
-
 // GET /reservations - returns reservation data from data.json
-
 app.get('/reservations', (req, res) => {
     const reservations = fs.existsSync('data.json')
         ? JSON.parse(fs.readFileSync('data.json'))
         : [];
     res.json(reservations);
 });
-
 
 // Get available slots (from HEAD)
 app.get('/available', (req, res) => {
@@ -117,10 +110,8 @@ app.post('/reserve', (req, res) => {
     });
 });
 
-// Start server (from Commit bfcc84f)
+// Use the dynamic port from Render or fallback to 8080 locally
 const PORT = process.env.PORT || 8080;
-
 app.listen(PORT, () => {
     console.log(`🚀 Server running at http://localhost:${PORT}`);
 });
-
