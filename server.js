@@ -9,6 +9,7 @@ const app = express();
 // Serve static files from the "public" folder
 app.use(express.static(path.join(__dirname, 'public')));
 
+
 // Middleware
 app.use(bodyParser.json()); // From HEAD
 
@@ -25,12 +26,15 @@ const transporter = nodemailer.createTransport({
     }
 });
 
-// Homepage route (from Commit bfcc84f)
+
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// Get current reservations (from HEAD)
+
+
+// GET /reservations - returns reservation data from data.json
+
 app.get('/reservations', (req, res) => {
     const reservations = fs.existsSync('data.json')
         ? JSON.parse(fs.readFileSync('data.json'))
